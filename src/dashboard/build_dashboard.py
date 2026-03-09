@@ -23,7 +23,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
     pages = []
 
     # ================================================================
-    # DATASETS
+    # DATASETS — each query is a SINGLE string to avoid join issues
     # ================================================================
 
     # DS1: Schemas by business owner (from tags)
@@ -31,17 +31,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
         "name": "ds_my_schemas",
         "displayName": "My Schemas",
         "queryLines": [
-            f"SELECT",
-            f"  st.catalog_name,",
-            f"  st.schema_name,",
-            f"  st.tag_value AS business_owner,",
-            f"  s.comment AS schema_description,",
-            f"  s.created AS schema_created,",
-            f"  (SELECT COUNT(*) FROM system.information_schema.tables t WHERE t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name AND t.table_type IN ('MANAGED', 'EXTERNAL')) AS table_count",
-            f"FROM system.information_schema.schema_tags st",
-            f"JOIN system.information_schema.schemata s",
-            f"  ON st.catalog_name = s.catalog_name AND st.schema_name = s.schema_name",
-            f"WHERE st.tag_name = 'business_owner'"
+            f"SELECT st.catalog_name, st.schema_name, st.tag_value AS business_owner, s.comment AS schema_description, s.created AS schema_created, (SELECT COUNT(*) FROM system.information_schema.tables t WHERE t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name AND t.table_type IN ('MANAGED', 'EXTERNAL')) AS table_count FROM system.information_schema.schema_tags st JOIN system.information_schema.schemata s ON st.catalog_name = s.catalog_name AND st.schema_name = s.schema_name WHERE st.tag_name = 'business_owner'"
         ]
     })
 
@@ -50,18 +40,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
         "name": "ds_permissions",
         "displayName": "Schema Permissions",
         "queryLines": [
-            f"SELECT",
-            f"  sp.schema_name,",
-            f"  sp.grantee,",
-            f"  sp.privilege_type,",
-            f"  sp.grantor,",
-            f"  sp.is_grantable,",
-            f"  sp.inherited_from,",
-            f"  st.tag_value AS business_owner",
-            f"FROM system.information_schema.schema_privileges sp",
-            f"JOIN system.information_schema.schema_tags st",
-            f"  ON sp.catalog_name = st.catalog_name AND sp.schema_name = st.schema_name",
-            f"WHERE st.tag_name = 'business_owner'"
+            f"SELECT sp.schema_name, sp.grantee, sp.privilege_type, sp.grantor, sp.is_grantable, sp.inherited_from, st.tag_value AS business_owner FROM system.information_schema.schema_privileges sp JOIN system.information_schema.schema_tags st ON sp.catalog_name = st.catalog_name AND sp.schema_name = st.schema_name WHERE st.tag_name = 'business_owner'"
         ]
     })
 
@@ -70,54 +49,16 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
         "name": "ds_freshness",
         "displayName": "Data Freshness",
         "queryLines": [
-            f"SELECT",
-            f"  t.table_catalog,",
-            f"  t.table_schema,",
-            f"  t.table_name,",
-            f"  t.table_type,",
-            f"  t.last_altered,",
-            f"  t.last_altered_by,",
-            f"  DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) AS hours_since_update,",
-            f"  CASE",
-            f"    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 24 THEN 'Fresh'",
-            f"    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 72 THEN 'Stale'",
-            f"    ELSE 'Critical'",
-            f"  END AS freshness_status,",
-            f"  st.tag_value AS business_owner",
-            f"FROM system.information_schema.tables t",
-            f"JOIN system.information_schema.schema_tags st",
-            f"  ON t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name",
-            f"WHERE st.tag_name = 'business_owner'",
-            f"  AND t.table_type IN ('MANAGED', 'EXTERNAL')",
-            f"ORDER BY t.last_altered DESC"
+            f"SELECT t.table_catalog, t.table_schema, t.table_name, t.table_type, t.last_altered, t.last_altered_by, DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) AS hours_since_update, CASE WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 24 THEN 'Fresh' WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 72 THEN 'Stale' ELSE 'Critical' END AS freshness_status, st.tag_value AS business_owner FROM system.information_schema.tables t JOIN system.information_schema.schema_tags st ON t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name WHERE st.tag_name = 'business_owner' AND t.table_type IN ('MANAGED', 'EXTERNAL') ORDER BY t.last_altered DESC"
         ]
     })
 
-    # DS4: Audit trail
+    # DS4: Audit trail — filter to our catalog for relevance
     datasets.append({
         "name": "ds_audit",
         "displayName": "Audit Trail",
         "queryLines": [
-            f"SELECT",
-            f"  a.event_time,",
-            f"  a.event_date,",
-            f"  a.user_identity.email AS user_email,",
-            f"  a.action_name,",
-            f"  COALESCE(a.request_params.full_name_arg, a.request_params.name) AS object_accessed,",
-            f"  a.service_name,",
-            f"  a.source_ip_address,",
-            f"  a.response.status_code AS status_code",
-            f"FROM system.access.audit a",
-            f"WHERE a.service_name = 'unityCatalog'",
-            f"  AND a.action_name IN (",
-            f"    'getTable', 'createTable', 'deleteTable',",
-            f"    'getSchema', 'createSchema', 'alterSchema',",
-            f"    'generateTemporaryTableCredential',",
-            f"    'updatePermissions', 'getPermissions'",
-            f"  )",
-            f"  AND a.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-            f"ORDER BY a.event_time DESC",
-            f"LIMIT 1000"
+            f"SELECT a.event_time, a.event_date, a.user_identity.email AS user_email, a.action_name, COALESCE(a.request_params.full_name_arg, a.request_params.name) AS object_accessed, a.service_name, a.source_ip_address, a.response.status_code AS status_code FROM system.access.audit a WHERE a.service_name = 'unityCatalog' AND a.action_name IN ('getTable', 'createTable', 'deleteTable', 'getSchema', 'createSchema', 'alterSchema', 'generateTemporaryTableCredential', 'updatePermissions', 'getPermissions') AND a.event_date >= DATEADD(DAY, -30, CURRENT_DATE()) ORDER BY a.event_time DESC LIMIT 1000"
         ]
     })
 
@@ -126,43 +67,16 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
         "name": "ds_lineage",
         "displayName": "Table Lineage",
         "queryLines": [
-            f"SELECT",
-            f"  tl.source_table_full_name,",
-            f"  tl.target_table_full_name,",
-            f"  tl.source_table_catalog,",
-            f"  tl.source_table_schema,",
-            f"  tl.target_table_catalog,",
-            f"  tl.target_table_schema,",
-            f"  tl.entity_type,",
-            f"  tl.event_time",
-            f"FROM system.access.table_lineage tl",
-            f"WHERE (",
-            f"  tl.source_table_full_name LIKE '{catalog}.%'",
-            f"  OR tl.target_table_full_name LIKE '{catalog}.%'",
-            f")",
-            f"AND tl.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-            f"ORDER BY tl.event_time DESC",
-            f"LIMIT 500"
+            f"SELECT tl.source_table_full_name, tl.target_table_full_name, tl.source_table_catalog, tl.source_table_schema, tl.target_table_catalog, tl.target_table_schema, tl.entity_type, tl.event_time FROM system.access.table_lineage tl WHERE (tl.source_table_full_name LIKE '{catalog}.%' OR tl.target_table_full_name LIKE '{catalog}.%') AND tl.event_date >= DATEADD(DAY, -30, CURRENT_DATE()) ORDER BY tl.event_time DESC LIMIT 500"
         ]
     })
 
-    # DS6: Query activity by user
+    # DS6: Query activity by user — fixed column name: execution_status not status
     datasets.append({
         "name": "ds_query_activity",
         "displayName": "Query Activity",
         "queryLines": [
-            f"SELECT",
-            f"  qh.executed_by AS user_name,",
-            f"  DATE_TRUNC('DAY', qh.start_time) AS query_date,",
-            f"  COUNT(*) AS query_count,",
-            f"  SUM(qh.total_duration_ms) / 1000.0 AS total_duration_secs,",
-            f"  SUM(qh.read_rows) AS total_rows_read",
-            f"FROM system.query.history qh",
-            f"WHERE qh.start_time >= DATEADD(DAY, -30, CURRENT_DATE())",
-            f"  AND qh.statement_text LIKE '%{catalog}%'",
-            f"  AND qh.status = 'FINISHED'",
-            f"GROUP BY qh.executed_by, DATE_TRUNC('DAY', qh.start_time)",
-            f"ORDER BY query_date DESC"
+            f"SELECT qh.executed_by AS user_name, DATE_TRUNC('DAY', qh.start_time) AS query_date, COUNT(*) AS query_count, SUM(qh.total_duration_ms) / 1000.0 AS total_duration_secs, SUM(qh.read_rows) AS total_rows_read FROM system.query.history qh WHERE qh.start_time >= DATEADD(DAY, -30, CURRENT_DATE()) AND qh.statement_text LIKE '%{catalog}%' AND qh.execution_status = 'FINISHED' GROUP BY qh.executed_by, DATE_TRUNC('DAY', qh.start_time) ORDER BY query_date DESC"
         ]
     })
 
@@ -171,15 +85,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
         "name": "ds_consumption",
         "displayName": "DBU Consumption",
         "queryLines": [
-            f"SELECT",
-            f"  u.usage_date,",
-            f"  u.sku_name,",
-            f"  u.billing_origin_product,",
-            f"  SUM(u.usage_quantity) AS total_dbus",
-            f"FROM system.billing.usage u",
-            f"WHERE u.usage_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-            f"GROUP BY u.usage_date, u.sku_name, u.billing_origin_product",
-            f"ORDER BY u.usage_date DESC"
+            f"SELECT u.usage_date, u.sku_name, u.billing_origin_product, SUM(u.usage_quantity) AS total_dbus FROM system.billing.usage u WHERE u.usage_date >= DATEADD(DAY, -30, CURRENT_DATE()) GROUP BY u.usage_date, u.sku_name, u.billing_origin_product ORDER BY u.usage_date DESC"
         ]
     })
 

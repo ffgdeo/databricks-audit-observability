@@ -4,158 +4,64 @@
       "name": "ds_my_schemas",
       "displayName": "My Schemas",
       "queryLines": [
-        "SELECT",
-        "  st.catalog_name,",
-        "  st.schema_name,",
-        "  st.tag_value AS business_owner,",
-        "  s.comment AS schema_description,",
-        "  s.created AS schema_created,",
-        "  (SELECT COUNT(*) FROM system.information_schema.tables t WHERE t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name AND t.table_type IN ('MANAGED', 'EXTERNAL')) AS table_count",
-        "FROM system.information_schema.schema_tags st",
-        "JOIN system.information_schema.schemata s",
-        "  ON st.catalog_name = s.catalog_name AND st.schema_name = s.schema_name",
-        "WHERE st.tag_name = 'business_owner'"
+        "SELECT st.catalog_name, st.schema_name, st.tag_value AS business_owner, s.comment AS schema_description, s.created AS schema_created, (SELECT COUNT(*) FROM system.information_schema.tables t WHERE t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name AND t.table_type IN ('MANAGED', 'EXTERNAL')) AS table_count FROM system.information_schema.schema_tags st JOIN system.information_schema.schemata s ON st.catalog_name = s.catalog_name AND st.schema_name = s.schema_name WHERE st.tag_name = 'business_owner'"
       ]
     },
     {
       "name": "ds_permissions",
       "displayName": "Schema Permissions",
       "queryLines": [
-        "SELECT",
-        "  sp.schema_name,",
-        "  sp.grantee,",
-        "  sp.privilege_type,",
-        "  sp.grantor,",
-        "  sp.is_grantable,",
-        "  sp.inherited_from,",
-        "  st.tag_value AS business_owner",
-        "FROM system.information_schema.schema_privileges sp",
-        "JOIN system.information_schema.schema_tags st",
-        "  ON sp.catalog_name = st.catalog_name AND sp.schema_name = st.schema_name",
-        "WHERE st.tag_name = 'business_owner'"
+        "SELECT sp.schema_name, sp.grantee, sp.privilege_type, sp.grantor, sp.is_grantable, sp.inherited_from, st.tag_value AS business_owner FROM system.information_schema.schema_privileges sp JOIN system.information_schema.schema_tags st ON sp.catalog_name = st.catalog_name AND sp.schema_name = st.schema_name WHERE st.tag_name = 'business_owner'"
       ]
     },
     {
       "name": "ds_freshness",
       "displayName": "Data Freshness",
       "queryLines": [
-        "SELECT",
-        "  t.table_catalog,",
-        "  t.table_schema,",
-        "  t.table_name,",
-        "  t.table_type,",
-        "  t.last_altered,",
-        "  t.last_altered_by,",
-        "  DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) AS hours_since_update,",
-        "  CASE",
-        "    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 24 THEN 'Fresh'",
-        "    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 72 THEN 'Stale'",
-        "    ELSE 'Critical'",
-        "  END AS freshness_status,",
-        "  st.tag_value AS business_owner",
-        "FROM system.information_schema.tables t",
-        "JOIN system.information_schema.schema_tags st",
-        "  ON t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name",
-        "WHERE st.tag_name = 'business_owner'",
-        "  AND t.table_type IN ('MANAGED', 'EXTERNAL')",
-        "ORDER BY t.last_altered DESC"
+        "SELECT t.table_catalog, t.table_schema, t.table_name, t.table_type, t.last_altered, t.last_altered_by, DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) AS hours_since_update, CASE WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 24 THEN 'Fresh' WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 72 THEN 'Stale' ELSE 'Critical' END AS freshness_status, st.tag_value AS business_owner FROM system.information_schema.tables t JOIN system.information_schema.schema_tags st ON t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name WHERE st.tag_name = 'business_owner' AND t.table_type IN ('MANAGED', 'EXTERNAL') ORDER BY t.last_altered DESC"
       ]
     },
     {
       "name": "ds_audit",
       "displayName": "Audit Trail",
       "queryLines": [
-        "SELECT",
-        "  a.event_time,",
-        "  a.event_date,",
-        "  a.user_identity.email AS user_email,",
-        "  a.action_name,",
-        "  COALESCE(a.request_params.full_name_arg, a.request_params.name) AS object_accessed,",
-        "  a.service_name,",
-        "  a.source_ip_address,",
-        "  a.response.status_code AS status_code",
-        "FROM system.access.audit a",
-        "WHERE a.service_name = 'unityCatalog'",
-        "  AND a.action_name IN (",
-        "    'getTable', 'createTable', 'deleteTable',",
-        "    'getSchema', 'createSchema', 'alterSchema',",
-        "    'generateTemporaryTableCredential',",
-        "    'updatePermissions', 'getPermissions'",
-        "  )",
-        "  AND a.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-        "ORDER BY a.event_time DESC",
-        "LIMIT 1000"
+        "SELECT a.event_time, a.event_date, a.user_identity.email AS user_email, a.action_name, COALESCE(a.request_params.full_name_arg, a.request_params.name) AS object_accessed, a.service_name, a.source_ip_address, a.response.status_code AS status_code FROM system.access.audit a WHERE a.service_name = 'unityCatalog' AND a.action_name IN ('getTable', 'createTable', 'deleteTable', 'getSchema', 'createSchema', 'alterSchema', 'generateTemporaryTableCredential', 'updatePermissions', 'getPermissions') AND a.event_date >= DATEADD(DAY, -30, CURRENT_DATE()) ORDER BY a.event_time DESC LIMIT 1000"
       ]
     },
     {
       "name": "ds_lineage",
       "displayName": "Table Lineage",
       "queryLines": [
-        "SELECT",
-        "  tl.source_table_full_name,",
-        "  tl.target_table_full_name,",
-        "  tl.source_table_catalog,",
-        "  tl.source_table_schema,",
-        "  tl.target_table_catalog,",
-        "  tl.target_table_schema,",
-        "  tl.entity_type,",
-        "  tl.event_time",
-        "FROM system.access.table_lineage tl",
-        "WHERE (",
-        "  tl.source_table_full_name LIKE 'audit_observability_catalog.%'",
-        "  OR tl.target_table_full_name LIKE 'audit_observability_catalog.%'",
-        ")",
-        "AND tl.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-        "ORDER BY tl.event_time DESC",
-        "LIMIT 500"
+        "SELECT tl.source_table_full_name, tl.target_table_full_name, tl.source_table_catalog, tl.source_table_schema, tl.target_table_catalog, tl.target_table_schema, tl.entity_type, tl.event_time FROM system.access.table_lineage tl WHERE (tl.source_table_full_name LIKE 'audit_observability_catalog.%' OR tl.target_table_full_name LIKE 'audit_observability_catalog.%') AND tl.event_date >= DATEADD(DAY, -30, CURRENT_DATE()) ORDER BY tl.event_time DESC LIMIT 500"
       ]
     },
     {
       "name": "ds_query_activity",
       "displayName": "Query Activity",
       "queryLines": [
-        "SELECT",
-        "  qh.executed_by AS user_name,",
-        "  DATE_TRUNC('DAY', qh.start_time) AS query_date,",
-        "  COUNT(*) AS query_count,",
-        "  SUM(qh.total_duration_ms) / 1000.0 AS total_duration_secs,",
-        "  SUM(qh.read_rows) AS total_rows_read",
-        "FROM system.query.history qh",
-        "WHERE qh.start_time >= DATEADD(DAY, -30, CURRENT_DATE())",
-        "  AND qh.statement_text LIKE '%audit_observability_catalog%'",
-        "  AND qh.status = 'FINISHED'",
-        "GROUP BY qh.executed_by, DATE_TRUNC('DAY', qh.start_time)",
-        "ORDER BY query_date DESC"
+        "SELECT qh.executed_by AS user_name, DATE_TRUNC('DAY', qh.start_time) AS query_date, COUNT(*) AS query_count, SUM(qh.total_duration_ms) / 1000.0 AS total_duration_secs, SUM(qh.read_rows) AS total_rows_read FROM system.query.history qh WHERE qh.start_time >= DATEADD(DAY, -30, CURRENT_DATE()) AND qh.statement_text LIKE '%audit_observability_catalog%' AND qh.execution_status = 'FINISHED' GROUP BY qh.executed_by, DATE_TRUNC('DAY', qh.start_time) ORDER BY query_date DESC"
       ]
     },
     {
       "name": "ds_consumption",
       "displayName": "DBU Consumption",
       "queryLines": [
-        "SELECT",
-        "  u.usage_date,",
-        "  u.sku_name,",
-        "  u.billing_origin_product,",
-        "  SUM(u.usage_quantity) AS total_dbus",
-        "FROM system.billing.usage u",
-        "WHERE u.usage_date >= DATEADD(DAY, -30, CURRENT_DATE())",
-        "GROUP BY u.usage_date, u.sku_name, u.billing_origin_product",
-        "ORDER BY u.usage_date DESC"
+        "SELECT u.usage_date, u.sku_name, u.billing_origin_product, SUM(u.usage_quantity) AS total_dbus FROM system.billing.usage u WHERE u.usage_date >= DATEADD(DAY, -30, CURRENT_DATE()) GROUP BY u.usage_date, u.sku_name, u.billing_origin_product ORDER BY u.usage_date DESC"
       ]
     }
   ],
   "pages": [
     {
-      "name": "ef19f96c",
+      "name": "f345e318",
       "displayName": "Ownership & Governance",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "ab9350d4",
+            "name": "4d264858",
             "queries": [
               {
-                "name": "filter_ab9350d4_business_owner",
+                "name": "filter_4d264858_business_owner",
                 "query": {
                   "datasetName": "ds_my_schemas",
                   "fields": [
@@ -180,7 +86,7 @@
                   {
                     "fieldName": "business_owner",
                     "displayName": "Business Owner",
-                    "queryName": "filter_ab9350d4_business_owner"
+                    "queryName": "filter_4d264858_business_owner"
                   }
                 ]
               },
@@ -199,7 +105,7 @@
         },
         {
           "widget": {
-            "name": "134e2c4e",
+            "name": "0f0c1b46",
             "queries": [
               {
                 "name": "main_query",
@@ -239,7 +145,7 @@
         },
         {
           "widget": {
-            "name": "8faf6e94",
+            "name": "e7a361b0",
             "queries": [
               {
                 "name": "main_query",
@@ -279,7 +185,7 @@
         },
         {
           "widget": {
-            "name": "a269068c",
+            "name": "fe488c8d",
             "queries": [
               {
                 "name": "main_query",
@@ -319,7 +225,7 @@
         },
         {
           "widget": {
-            "name": "88b34840",
+            "name": "9e960b84",
             "queries": [
               {
                 "name": "main_query",
@@ -359,7 +265,7 @@
         },
         {
           "widget": {
-            "name": "09549c28",
+            "name": "00059f90",
             "queries": [
               {
                 "name": "main_query",
@@ -449,7 +355,7 @@
         },
         {
           "widget": {
-            "name": "b363fef8",
+            "name": "629942f1",
             "queries": [
               {
                 "name": "main_query",
@@ -529,7 +435,7 @@
         },
         {
           "widget": {
-            "name": "b5180f9f",
+            "name": "c4d6e874",
             "queries": [
               {
                 "name": "main_query",
@@ -618,7 +524,7 @@
         },
         {
           "widget": {
-            "name": "a3b4156a",
+            "name": "ca1f5399",
             "queries": [
               {
                 "name": "main_query",
@@ -703,7 +609,7 @@
         },
         {
           "widget": {
-            "name": "1f48fe9d",
+            "name": "f813102e",
             "queries": [
               {
                 "name": "main_query",
@@ -806,16 +712,16 @@
       ]
     },
     {
-      "name": "224c029c",
+      "name": "c1eeda25",
       "displayName": "Audit Trail & Access",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "60d0a86c",
+            "name": "03dde875",
             "queries": [
               {
-                "name": "filter_60d0a86c_event_date",
+                "name": "filter_03dde875_event_date",
                 "query": {
                   "datasetName": "ds_audit",
                   "fields": [
@@ -840,7 +746,7 @@
                   {
                     "fieldName": "event_date",
                     "displayName": "Event Date",
-                    "queryName": "filter_60d0a86c_event_date"
+                    "queryName": "filter_03dde875_event_date"
                   }
                 ]
               },
@@ -859,7 +765,7 @@
         },
         {
           "widget": {
-            "name": "c35201c8",
+            "name": "379d4a6a",
             "queries": [
               {
                 "name": "main_query",
@@ -899,7 +805,7 @@
         },
         {
           "widget": {
-            "name": "4f4375dd",
+            "name": "55b559c1",
             "queries": [
               {
                 "name": "main_query",
@@ -939,7 +845,7 @@
         },
         {
           "widget": {
-            "name": "5157d852",
+            "name": "d248c37b",
             "queries": [
               {
                 "name": "main_query",
@@ -1004,7 +910,7 @@
         },
         {
           "widget": {
-            "name": "88f62ad8",
+            "name": "9c0ad193",
             "queries": [
               {
                 "name": "main_query",
@@ -1069,7 +975,7 @@
         },
         {
           "widget": {
-            "name": "6e42d891",
+            "name": "7c5de5f5",
             "queries": [
               {
                 "name": "main_query",
@@ -1123,7 +1029,7 @@
         },
         {
           "widget": {
-            "name": "1a512245",
+            "name": "ecea437d",
             "queries": [
               {
                 "name": "main_query",
@@ -1225,13 +1131,13 @@
       ]
     },
     {
-      "name": "6d20bf7f",
+      "name": "589b5ba1",
       "displayName": "Lineage & Usage",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "204fdd39",
+            "name": "068ad48e",
             "queries": [
               {
                 "name": "main_query",
@@ -1310,7 +1216,7 @@
         },
         {
           "widget": {
-            "name": "02ac135c",
+            "name": "67929ac2",
             "queries": [
               {
                 "name": "main_query",
@@ -1375,7 +1281,7 @@
         },
         {
           "widget": {
-            "name": "87eed5c3",
+            "name": "cf9e1f13",
             "queries": [
               {
                 "name": "main_query",
@@ -1429,7 +1335,7 @@
         },
         {
           "widget": {
-            "name": "9f28dab7",
+            "name": "f8c16de0",
             "queries": [
               {
                 "name": "main_query",
@@ -1494,7 +1400,7 @@
         },
         {
           "widget": {
-            "name": "03e24017",
+            "name": "9cc0b7fc",
             "queries": [
               {
                 "name": "main_query",
@@ -1559,7 +1465,7 @@
         },
         {
           "widget": {
-            "name": "cf1ecf41",
+            "name": "55b24b67",
             "queries": [
               {
                 "name": "main_query",
