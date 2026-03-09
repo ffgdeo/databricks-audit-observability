@@ -52,16 +52,16 @@
   ],
   "pages": [
     {
-      "name": "f345e318",
+      "name": "62fd124e",
       "displayName": "Ownership & Governance",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "4d264858",
+            "name": "664ceafb",
             "queries": [
               {
-                "name": "filter_4d264858_business_owner",
+                "name": "filter_664ceafb_business_owner",
                 "query": {
                   "datasetName": "ds_my_schemas",
                   "fields": [
@@ -86,7 +86,7 @@
                   {
                     "fieldName": "business_owner",
                     "displayName": "Business Owner",
-                    "queryName": "filter_4d264858_business_owner"
+                    "queryName": "filter_664ceafb_business_owner"
                   }
                 ]
               },
@@ -105,7 +105,7 @@
         },
         {
           "widget": {
-            "name": "0f0c1b46",
+            "name": "4665dd22",
             "queries": [
               {
                 "name": "main_query",
@@ -145,7 +145,7 @@
         },
         {
           "widget": {
-            "name": "e7a361b0",
+            "name": "52bb7d45",
             "queries": [
               {
                 "name": "main_query",
@@ -185,7 +185,7 @@
         },
         {
           "widget": {
-            "name": "fe488c8d",
+            "name": "fb36ad3e",
             "queries": [
               {
                 "name": "main_query",
@@ -225,7 +225,7 @@
         },
         {
           "widget": {
-            "name": "9e960b84",
+            "name": "6fb199e8",
             "queries": [
               {
                 "name": "main_query",
@@ -265,7 +265,7 @@
         },
         {
           "widget": {
-            "name": "00059f90",
+            "name": "ffc69ad5",
             "queries": [
               {
                 "name": "main_query",
@@ -306,37 +306,31 @@
                     "fieldName": "catalog_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Catalog",
-                    "order": 100000
+                    "title": "Catalog"
                   },
                   {
                     "fieldName": "schema_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Schema",
-                    "order": 100001
+                    "title": "Schema"
                   },
                   {
                     "fieldName": "business_owner",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Owner",
-                    "order": 100002
+                    "title": "Owner"
                   },
                   {
                     "fieldName": "schema_description",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Description",
-                    "order": 100003
+                    "title": "Description"
                   },
                   {
                     "fieldName": "table_count",
                     "type": "integer",
                     "displayAs": "number",
-                    "title": "Tables",
-                    "order": 100004,
-                    "alignContent": "right"
+                    "title": "Tables"
                   }
                 ]
               },
@@ -355,7 +349,7 @@
         },
         {
           "widget": {
-            "name": "629942f1",
+            "name": "42c3f028",
             "queries": [
               {
                 "name": "main_query",
@@ -435,7 +429,7 @@
         },
         {
           "widget": {
-            "name": "c4d6e874",
+            "name": "2fecb140",
             "queries": [
               {
                 "name": "main_query",
@@ -476,36 +470,31 @@
                     "fieldName": "schema_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Schema",
-                    "order": 100000
+                    "title": "Schema"
                   },
                   {
                     "fieldName": "grantee",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Grantee",
-                    "order": 100001
+                    "title": "Grantee"
                   },
                   {
                     "fieldName": "privilege_type",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Privilege",
-                    "order": 100002
+                    "title": "Privilege"
                   },
                   {
                     "fieldName": "grantor",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Granted By",
-                    "order": 100003
+                    "title": "Granted By"
                   },
                   {
                     "fieldName": "is_grantable",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Grantable?",
-                    "order": 100004
+                    "title": "Grantable?"
                   }
                 ]
               },
@@ -524,7 +513,7 @@
         },
         {
           "widget": {
-            "name": "ca1f5399",
+            "name": "87c4b779",
             "queries": [
               {
                 "name": "main_query",
@@ -609,7 +598,7 @@
         },
         {
           "widget": {
-            "name": "f813102e",
+            "name": "458c6c33",
             "queries": [
               {
                 "name": "main_query",
@@ -654,45 +643,37 @@
                     "fieldName": "table_schema",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Schema",
-                    "order": 100000
+                    "title": "Schema"
                   },
                   {
                     "fieldName": "table_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Table",
-                    "order": 100001
+                    "title": "Table"
                   },
                   {
                     "fieldName": "last_altered",
                     "type": "datetime",
                     "displayAs": "datetime",
-                    "title": "Last Updated",
-                    "order": 100002,
-                    "alignContent": "right"
+                    "title": "Last Updated"
                   },
                   {
                     "fieldName": "hours_since_update",
                     "type": "integer",
                     "displayAs": "number",
-                    "title": "Hours Ago",
-                    "order": 100003,
-                    "alignContent": "right"
+                    "title": "Hours Ago"
                   },
                   {
                     "fieldName": "freshness_status",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Status",
-                    "order": 100004
+                    "title": "Status"
                   },
                   {
                     "fieldName": "last_altered_by",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Updated By",
-                    "order": 100005
+                    "title": "Updated By"
                   }
                 ]
               },
@@ -712,16 +693,16 @@
       ]
     },
     {
-      "name": "c1eeda25",
+      "name": "e519673c",
       "displayName": "Audit Trail & Access",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "03dde875",
+            "name": "b2ae3d2d",
             "queries": [
               {
-                "name": "filter_03dde875_event_date",
+                "name": "filter_b2ae3d2d_event_date",
                 "query": {
                   "datasetName": "ds_audit",
                   "fields": [
@@ -746,7 +727,7 @@
                   {
                     "fieldName": "event_date",
                     "displayName": "Event Date",
-                    "queryName": "filter_03dde875_event_date"
+                    "queryName": "filter_b2ae3d2d_event_date"
                   }
                 ]
               },
@@ -765,7 +746,7 @@
         },
         {
           "widget": {
-            "name": "379d4a6a",
+            "name": "ab779edd",
             "queries": [
               {
                 "name": "main_query",
@@ -805,7 +786,7 @@
         },
         {
           "widget": {
-            "name": "55b559c1",
+            "name": "1ce7e94f",
             "queries": [
               {
                 "name": "main_query",
@@ -845,7 +826,7 @@
         },
         {
           "widget": {
-            "name": "d248c37b",
+            "name": "7648bee2",
             "queries": [
               {
                 "name": "main_query",
@@ -910,7 +891,7 @@
         },
         {
           "widget": {
-            "name": "9c0ad193",
+            "name": "15ebe78f",
             "queries": [
               {
                 "name": "main_query",
@@ -975,7 +956,7 @@
         },
         {
           "widget": {
-            "name": "7c5de5f5",
+            "name": "57d6e36a",
             "queries": [
               {
                 "name": "main_query",
@@ -1029,7 +1010,7 @@
         },
         {
           "widget": {
-            "name": "ecea437d",
+            "name": "5a0d40c4",
             "queries": [
               {
                 "name": "main_query",
@@ -1074,44 +1055,37 @@
                     "fieldName": "event_time",
                     "type": "datetime",
                     "displayAs": "datetime",
-                    "title": "Time",
-                    "order": 100000,
-                    "alignContent": "right"
+                    "title": "Time"
                   },
                   {
                     "fieldName": "user_email",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "User",
-                    "order": 100001
+                    "title": "User"
                   },
                   {
                     "fieldName": "action_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Action",
-                    "order": 100002
+                    "title": "Action"
                   },
                   {
                     "fieldName": "object_accessed",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Object",
-                    "order": 100003
+                    "title": "Object"
                   },
                   {
                     "fieldName": "source_ip_address",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "IP Address",
-                    "order": 100004
+                    "title": "IP Address"
                   },
                   {
                     "fieldName": "status_code",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Status",
-                    "order": 100005
+                    "title": "Status"
                   }
                 ]
               },
@@ -1131,13 +1105,13 @@
       ]
     },
     {
-      "name": "589b5ba1",
+      "name": "683fc7a6",
       "displayName": "Lineage & Usage",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "068ad48e",
+            "name": "bb062ade",
             "queries": [
               {
                 "name": "main_query",
@@ -1174,30 +1148,25 @@
                     "fieldName": "source_table_full_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Source Table",
-                    "order": 100000
+                    "title": "Source Table"
                   },
                   {
                     "fieldName": "target_table_full_name",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Target Table",
-                    "order": 100001
+                    "title": "Target Table"
                   },
                   {
                     "fieldName": "entity_type",
                     "type": "string",
                     "displayAs": "string",
-                    "title": "Entity Type",
-                    "order": 100002
+                    "title": "Entity Type"
                   },
                   {
                     "fieldName": "event_time",
                     "type": "datetime",
                     "displayAs": "datetime",
-                    "title": "Event Time",
-                    "order": 100003,
-                    "alignContent": "right"
+                    "title": "Event Time"
                   }
                 ]
               },
@@ -1216,7 +1185,7 @@
         },
         {
           "widget": {
-            "name": "67929ac2",
+            "name": "21c9e417",
             "queries": [
               {
                 "name": "main_query",
@@ -1281,7 +1250,7 @@
         },
         {
           "widget": {
-            "name": "cf9e1f13",
+            "name": "7615e9ee",
             "queries": [
               {
                 "name": "main_query",
@@ -1335,7 +1304,7 @@
         },
         {
           "widget": {
-            "name": "f8c16de0",
+            "name": "75bd91fe",
             "queries": [
               {
                 "name": "main_query",
@@ -1400,7 +1369,7 @@
         },
         {
           "widget": {
-            "name": "9cc0b7fc",
+            "name": "d69fb093",
             "queries": [
               {
                 "name": "main_query",
@@ -1465,7 +1434,7 @@
         },
         {
           "widget": {
-            "name": "55b24b67",
+            "name": "d446e362",
             "queries": [
               {
                 "name": "main_query",

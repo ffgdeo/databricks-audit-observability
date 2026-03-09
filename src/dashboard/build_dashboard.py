@@ -218,11 +218,11 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 1, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "catalog_name", "type": "string", "displayAs": "string", "title": "Catalog", "order": 100000},
-                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema", "order": 100001},
-                    {"fieldName": "business_owner", "type": "string", "displayAs": "string", "title": "Owner", "order": 100002},
-                    {"fieldName": "schema_description", "type": "string", "displayAs": "string", "title": "Description", "order": 100003},
-                    {"fieldName": "table_count", "type": "integer", "displayAs": "number", "title": "Tables", "order": 100004, "alignContent": "right"}
+                    {"fieldName": "catalog_name", "type": "string", "displayAs": "string", "title": "Catalog"},
+                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "business_owner", "type": "string", "displayAs": "string", "title": "Owner"},
+                    {"fieldName": "schema_description", "type": "string", "displayAs": "string", "title": "Description"},
+                    {"fieldName": "table_count", "type": "integer", "displayAs": "number", "title": "Tables"}
                 ]},
                 "frame": {"showTitle": True, "title": "My Schemas"}
             }
@@ -276,11 +276,11 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 1, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema", "order": 100000},
-                    {"fieldName": "grantee", "type": "string", "displayAs": "string", "title": "Grantee", "order": 100001},
-                    {"fieldName": "privilege_type", "type": "string", "displayAs": "string", "title": "Privilege", "order": 100002},
-                    {"fieldName": "grantor", "type": "string", "displayAs": "string", "title": "Granted By", "order": 100003},
-                    {"fieldName": "is_grantable", "type": "string", "displayAs": "string", "title": "Grantable?", "order": 100004}
+                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "grantee", "type": "string", "displayAs": "string", "title": "Grantee"},
+                    {"fieldName": "privilege_type", "type": "string", "displayAs": "string", "title": "Privilege"},
+                    {"fieldName": "grantor", "type": "string", "displayAs": "string", "title": "Granted By"},
+                    {"fieldName": "is_grantable", "type": "string", "displayAs": "string", "title": "Grantable?"}
                 ]},
                 "frame": {"showTitle": True, "title": "Permission Details"}
             }
@@ -338,12 +338,12 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 1, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "table_schema", "type": "string", "displayAs": "string", "title": "Schema", "order": 100000},
-                    {"fieldName": "table_name", "type": "string", "displayAs": "string", "title": "Table", "order": 100001},
-                    {"fieldName": "last_altered", "type": "datetime", "displayAs": "datetime", "title": "Last Updated", "order": 100002, "alignContent": "right"},
-                    {"fieldName": "hours_since_update", "type": "integer", "displayAs": "number", "title": "Hours Ago", "order": 100003, "alignContent": "right"},
-                    {"fieldName": "freshness_status", "type": "string", "displayAs": "string", "title": "Status", "order": 100004},
-                    {"fieldName": "last_altered_by", "type": "string", "displayAs": "string", "title": "Updated By", "order": 100005}
+                    {"fieldName": "table_schema", "type": "string", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "table_name", "type": "string", "displayAs": "string", "title": "Table"},
+                    {"fieldName": "last_altered", "type": "datetime", "displayAs": "datetime", "title": "Last Updated"},
+                    {"fieldName": "hours_since_update", "type": "integer", "displayAs": "number", "title": "Hours Ago"},
+                    {"fieldName": "freshness_status", "type": "string", "displayAs": "string", "title": "Status"},
+                    {"fieldName": "last_altered_by", "type": "string", "displayAs": "string", "title": "Updated By"}
                 ]},
                 "frame": {"showTitle": True, "title": "Data Freshness Details"}
             }
@@ -518,12 +518,12 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 1, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Time", "order": 100000, "alignContent": "right"},
-                    {"fieldName": "user_email", "type": "string", "displayAs": "string", "title": "User", "order": 100001},
-                    {"fieldName": "action_name", "type": "string", "displayAs": "string", "title": "Action", "order": 100002},
-                    {"fieldName": "object_accessed", "type": "string", "displayAs": "string", "title": "Object", "order": 100003},
-                    {"fieldName": "source_ip_address", "type": "string", "displayAs": "string", "title": "IP Address", "order": 100004},
-                    {"fieldName": "status_code", "type": "string", "displayAs": "string", "title": "Status", "order": 100005}
+                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Time"},
+                    {"fieldName": "user_email", "type": "string", "displayAs": "string", "title": "User"},
+                    {"fieldName": "action_name", "type": "string", "displayAs": "string", "title": "Action"},
+                    {"fieldName": "object_accessed", "type": "string", "displayAs": "string", "title": "Object"},
+                    {"fieldName": "source_ip_address", "type": "string", "displayAs": "string", "title": "IP Address"},
+                    {"fieldName": "status_code", "type": "string", "displayAs": "string", "title": "Status"}
                 ]},
                 "frame": {"showTitle": True, "title": "Audit Log Detail"}
             }
@@ -561,10 +561,10 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 1, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "source_table_full_name", "type": "string", "displayAs": "string", "title": "Source Table", "order": 100000},
-                    {"fieldName": "target_table_full_name", "type": "string", "displayAs": "string", "title": "Target Table", "order": 100001},
-                    {"fieldName": "entity_type", "type": "string", "displayAs": "string", "title": "Entity Type", "order": 100002},
-                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Event Time", "order": 100003, "alignContent": "right"}
+                    {"fieldName": "source_table_full_name", "type": "string", "displayAs": "string", "title": "Source Table"},
+                    {"fieldName": "target_table_full_name", "type": "string", "displayAs": "string", "title": "Target Table"},
+                    {"fieldName": "entity_type", "type": "string", "displayAs": "string", "title": "Entity Type"},
+                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Event Time"}
                 ]},
                 "frame": {"showTitle": True, "title": "Data Lineage"}
             }
