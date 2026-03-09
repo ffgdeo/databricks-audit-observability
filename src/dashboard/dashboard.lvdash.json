@@ -1,0 +1,1623 @@
+{
+  "datasets": [
+    {
+      "name": "ds_my_schemas",
+      "displayName": "My Schemas",
+      "queryLines": [
+        "SELECT",
+        "  st.catalog_name,",
+        "  st.schema_name,",
+        "  st.tag_value AS business_owner,",
+        "  s.comment AS schema_description,",
+        "  s.created AS schema_created,",
+        "  (SELECT COUNT(*) FROM system.information_schema.tables t WHERE t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name AND t.table_type IN ('MANAGED', 'EXTERNAL')) AS table_count",
+        "FROM system.information_schema.schema_tags st",
+        "JOIN system.information_schema.schemata s",
+        "  ON st.catalog_name = s.catalog_name AND st.schema_name = s.schema_name",
+        "WHERE st.tag_name = 'business_owner'"
+      ]
+    },
+    {
+      "name": "ds_permissions",
+      "displayName": "Schema Permissions",
+      "queryLines": [
+        "SELECT",
+        "  sp.schema_name,",
+        "  sp.grantee,",
+        "  sp.privilege_type,",
+        "  sp.grantor,",
+        "  sp.is_grantable,",
+        "  sp.inherited_from,",
+        "  st.tag_value AS business_owner",
+        "FROM system.information_schema.schema_privileges sp",
+        "JOIN system.information_schema.schema_tags st",
+        "  ON sp.catalog_name = st.catalog_name AND sp.schema_name = st.schema_name",
+        "WHERE st.tag_name = 'business_owner'"
+      ]
+    },
+    {
+      "name": "ds_freshness",
+      "displayName": "Data Freshness",
+      "queryLines": [
+        "SELECT",
+        "  t.table_catalog,",
+        "  t.table_schema,",
+        "  t.table_name,",
+        "  t.table_type,",
+        "  t.last_altered,",
+        "  t.last_altered_by,",
+        "  DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) AS hours_since_update,",
+        "  CASE",
+        "    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 24 THEN 'Fresh'",
+        "    WHEN DATEDIFF(HOUR, t.last_altered, CURRENT_TIMESTAMP()) < 72 THEN 'Stale'",
+        "    ELSE 'Critical'",
+        "  END AS freshness_status,",
+        "  st.tag_value AS business_owner",
+        "FROM system.information_schema.tables t",
+        "JOIN system.information_schema.schema_tags st",
+        "  ON t.table_catalog = st.catalog_name AND t.table_schema = st.schema_name",
+        "WHERE st.tag_name = 'business_owner'",
+        "  AND t.table_type IN ('MANAGED', 'EXTERNAL')",
+        "ORDER BY t.last_altered DESC"
+      ]
+    },
+    {
+      "name": "ds_audit",
+      "displayName": "Audit Trail",
+      "queryLines": [
+        "SELECT",
+        "  a.event_time,",
+        "  a.event_date,",
+        "  a.user_identity.email AS user_email,",
+        "  a.action_name,",
+        "  COALESCE(a.request_params.full_name_arg, a.request_params.name) AS object_accessed,",
+        "  a.service_name,",
+        "  a.source_ip_address,",
+        "  a.response.status_code AS status_code",
+        "FROM system.access.audit a",
+        "WHERE a.service_name = 'unityCatalog'",
+        "  AND a.action_name IN (",
+        "    'getTable', 'createTable', 'deleteTable',",
+        "    'getSchema', 'createSchema', 'alterSchema',",
+        "    'generateTemporaryTableCredential',",
+        "    'updatePermissions', 'getPermissions'",
+        "  )",
+        "  AND a.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
+        "ORDER BY a.event_time DESC",
+        "LIMIT 1000"
+      ]
+    },
+    {
+      "name": "ds_lineage",
+      "displayName": "Table Lineage",
+      "queryLines": [
+        "SELECT",
+        "  tl.source_table_full_name,",
+        "  tl.target_table_full_name,",
+        "  tl.source_table_catalog,",
+        "  tl.source_table_schema,",
+        "  tl.target_table_catalog,",
+        "  tl.target_table_schema,",
+        "  tl.entity_type,",
+        "  tl.event_time",
+        "FROM system.access.table_lineage tl",
+        "WHERE (",
+        "  tl.source_table_full_name LIKE 'audit_observability_catalog.%'",
+        "  OR tl.target_table_full_name LIKE 'audit_observability_catalog.%'",
+        ")",
+        "AND tl.event_date >= DATEADD(DAY, -30, CURRENT_DATE())",
+        "ORDER BY tl.event_time DESC",
+        "LIMIT 500"
+      ]
+    },
+    {
+      "name": "ds_query_activity",
+      "displayName": "Query Activity",
+      "queryLines": [
+        "SELECT",
+        "  qh.executed_by AS user_name,",
+        "  DATE_TRUNC('DAY', qh.start_time) AS query_date,",
+        "  COUNT(*) AS query_count,",
+        "  SUM(qh.total_duration_ms) / 1000.0 AS total_duration_secs,",
+        "  SUM(qh.read_rows) AS total_rows_read",
+        "FROM system.query.history qh",
+        "WHERE qh.start_time >= DATEADD(DAY, -30, CURRENT_DATE())",
+        "  AND qh.statement_text LIKE '%audit_observability_catalog%'",
+        "  AND qh.status = 'FINISHED'",
+        "GROUP BY qh.executed_by, DATE_TRUNC('DAY', qh.start_time)",
+        "ORDER BY query_date DESC"
+      ]
+    },
+    {
+      "name": "ds_consumption",
+      "displayName": "DBU Consumption",
+      "queryLines": [
+        "SELECT",
+        "  u.usage_date,",
+        "  u.sku_name,",
+        "  u.billing_origin_product,",
+        "  SUM(u.usage_quantity) AS total_dbus",
+        "FROM system.billing.usage u",
+        "WHERE u.usage_date >= DATEADD(DAY, -30, CURRENT_DATE())",
+        "GROUP BY u.usage_date, u.sku_name, u.billing_origin_product",
+        "ORDER BY u.usage_date DESC"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "ef19f96c",
+      "displayName": "Ownership & Governance",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "ab9350d4",
+            "queries": [
+              {
+                "name": "filter_ab9350d4_business_owner",
+                "query": {
+                  "datasetName": "ds_my_schemas",
+                  "fields": [
+                    {
+                      "name": "business_owner",
+                      "expression": "`business_owner`"
+                    },
+                    {
+                      "name": "business_owner_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "business_owner",
+                    "displayName": "Business Owner",
+                    "queryName": "filter_ab9350d4_business_owner"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Business Owner"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "134e2c4e",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_my_schemas",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Schemas Owned"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Schemas Owned"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "8faf6e94",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Total Tables"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Tables"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "a269068c",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_permissions",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Total Grants"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Grants"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "88b34840",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT_IF(`freshness_status` != 'Fresh')"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Freshness Issues"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Freshness Issues"
+              }
+            }
+          },
+          "position": {
+            "x": 5,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "09549c28",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_my_schemas",
+                  "fields": [
+                    {
+                      "name": "catalog_name",
+                      "expression": "`catalog_name`"
+                    },
+                    {
+                      "name": "schema_name",
+                      "expression": "`schema_name`"
+                    },
+                    {
+                      "name": "business_owner",
+                      "expression": "`business_owner`"
+                    },
+                    {
+                      "name": "schema_description",
+                      "expression": "`schema_description`"
+                    },
+                    {
+                      "name": "table_count",
+                      "expression": "`table_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "catalog_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Catalog",
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "schema_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Schema",
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "business_owner",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Owner",
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "schema_description",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Description",
+                    "order": 100003
+                  },
+                  {
+                    "fieldName": "table_count",
+                    "type": "integer",
+                    "displayAs": "number",
+                    "title": "Tables",
+                    "order": 100004,
+                    "alignContent": "right"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "My Schemas"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "b363fef8",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_permissions",
+                  "fields": [
+                    {
+                      "name": "grantee",
+                      "expression": "`grantee`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    },
+                    {
+                      "name": "privilege_type",
+                      "expression": "`privilege_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "grantee",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "Grantee"
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Number of Grants"
+                },
+                "color": {
+                  "fieldName": "privilege_type",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Privilege Type"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Permissions by Grantee"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00",
+                  "#00A972",
+                  "#FF3621",
+                  "#8BCAE7",
+                  "#AB4057"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 2,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "b5180f9f",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_permissions",
+                  "fields": [
+                    {
+                      "name": "schema_name",
+                      "expression": "`schema_name`"
+                    },
+                    {
+                      "name": "grantee",
+                      "expression": "`grantee`"
+                    },
+                    {
+                      "name": "privilege_type",
+                      "expression": "`privilege_type`"
+                    },
+                    {
+                      "name": "grantor",
+                      "expression": "`grantor`"
+                    },
+                    {
+                      "name": "is_grantable",
+                      "expression": "`is_grantable`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "schema_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Schema",
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "grantee",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Grantee",
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "privilege_type",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Privilege",
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "grantor",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Granted By",
+                    "order": 100003
+                  },
+                  {
+                    "fieldName": "is_grantable",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Grantable?",
+                    "order": 100004
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Permission Details"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "a3b4156a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "freshness_status",
+                      "expression": "`freshness_status`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "freshness_status",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Freshness Status"
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Table Count"
+                },
+                "color": {
+                  "fieldName": "freshness_status",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "Fresh",
+                        "color": "#00A972"
+                      },
+                      {
+                        "value": "Stale",
+                        "color": "#FFAB00"
+                      },
+                      {
+                        "value": "Critical",
+                        "color": "#FF3621"
+                      }
+                    ]
+                  },
+                  "displayName": "Status"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data Freshness Overview"
+              },
+              "mark": {
+                "colors": [
+                  "#00A972",
+                  "#FFAB00",
+                  "#FF3621"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "1f48fe9d",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_freshness",
+                  "fields": [
+                    {
+                      "name": "table_schema",
+                      "expression": "`table_schema`"
+                    },
+                    {
+                      "name": "table_name",
+                      "expression": "`table_name`"
+                    },
+                    {
+                      "name": "last_altered",
+                      "expression": "`last_altered`"
+                    },
+                    {
+                      "name": "hours_since_update",
+                      "expression": "`hours_since_update`"
+                    },
+                    {
+                      "name": "freshness_status",
+                      "expression": "`freshness_status`"
+                    },
+                    {
+                      "name": "last_altered_by",
+                      "expression": "`last_altered_by`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "table_schema",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Schema",
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "table_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Table",
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "last_altered",
+                    "type": "datetime",
+                    "displayAs": "datetime",
+                    "title": "Last Updated",
+                    "order": 100002,
+                    "alignContent": "right"
+                  },
+                  {
+                    "fieldName": "hours_since_update",
+                    "type": "integer",
+                    "displayAs": "number",
+                    "title": "Hours Ago",
+                    "order": 100003,
+                    "alignContent": "right"
+                  },
+                  {
+                    "fieldName": "freshness_status",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Status",
+                    "order": 100004
+                  },
+                  {
+                    "fieldName": "last_altered_by",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Updated By",
+                    "order": 100005
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data Freshness Details"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 10,
+            "width": 3,
+            "height": 4
+          }
+        }
+      ]
+    },
+    {
+      "name": "224c029c",
+      "displayName": "Audit Trail & Access",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "60d0a86c",
+            "queries": [
+              {
+                "name": "filter_60d0a86c_event_date",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "event_date",
+                      "expression": "`event_date`"
+                    },
+                    {
+                      "name": "event_date_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "event_date",
+                    "displayName": "Event Date",
+                    "queryName": "filter_60d0a86c_event_date"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Date Range"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "c35201c8",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count(*)",
+                  "displayName": "Audit Events"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Total Audit Events (30d)"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "4f4375dd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "count_distinct",
+                      "expression": "COUNT(DISTINCT `user_email`)"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "count_distinct",
+                  "displayName": "Unique Users"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Unique Users"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 2,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "5157d852",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "day(event_time)",
+                      "expression": "DATE_TRUNC(\"DAY\", `event_time`)"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "day(event_time)",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Event Count"
+                },
+                "color": {
+                  "fieldName": "action_name",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Action"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Access Events Over Time"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "88f62ad8",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "user_email",
+                      "expression": "`user_email`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "user_email",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "User"
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Access Count"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Top Accessing Users"
+              },
+              "mark": {
+                "colors": [
+                  "#FFAB00"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "6e42d891",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "action_name",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Action Type"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Audit Events by Type"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 6,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "1a512245",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_audit",
+                  "fields": [
+                    {
+                      "name": "event_time",
+                      "expression": "`event_time`"
+                    },
+                    {
+                      "name": "user_email",
+                      "expression": "`user_email`"
+                    },
+                    {
+                      "name": "action_name",
+                      "expression": "`action_name`"
+                    },
+                    {
+                      "name": "object_accessed",
+                      "expression": "`object_accessed`"
+                    },
+                    {
+                      "name": "source_ip_address",
+                      "expression": "`source_ip_address`"
+                    },
+                    {
+                      "name": "status_code",
+                      "expression": "`status_code`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "event_time",
+                    "type": "datetime",
+                    "displayAs": "datetime",
+                    "title": "Time",
+                    "order": 100000,
+                    "alignContent": "right"
+                  },
+                  {
+                    "fieldName": "user_email",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "User",
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "action_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Action",
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "object_accessed",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Object",
+                    "order": 100003
+                  },
+                  {
+                    "fieldName": "source_ip_address",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "IP Address",
+                    "order": 100004
+                  },
+                  {
+                    "fieldName": "status_code",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Status",
+                    "order": 100005
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Audit Log Detail"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 10,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "6d20bf7f",
+      "displayName": "Lineage & Usage",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layout": [
+        {
+          "widget": {
+            "name": "204fdd39",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_lineage",
+                  "fields": [
+                    {
+                      "name": "source_table_full_name",
+                      "expression": "`source_table_full_name`"
+                    },
+                    {
+                      "name": "target_table_full_name",
+                      "expression": "`target_table_full_name`"
+                    },
+                    {
+                      "name": "entity_type",
+                      "expression": "`entity_type`"
+                    },
+                    {
+                      "name": "event_time",
+                      "expression": "`event_time`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source_table_full_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Source Table",
+                    "order": 100000
+                  },
+                  {
+                    "fieldName": "target_table_full_name",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Target Table",
+                    "order": 100001
+                  },
+                  {
+                    "fieldName": "entity_type",
+                    "type": "string",
+                    "displayAs": "string",
+                    "title": "Entity Type",
+                    "order": 100002
+                  },
+                  {
+                    "fieldName": "event_time",
+                    "type": "datetime",
+                    "displayAs": "datetime",
+                    "title": "Event Time",
+                    "order": 100003,
+                    "alignContent": "right"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Data Lineage"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "02ac135c",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_lineage",
+                  "fields": [
+                    {
+                      "name": "target_table_full_name",
+                      "expression": "`target_table_full_name`"
+                    },
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "target_table_full_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "Target Table"
+                },
+                "y": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Lineage Edges"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Most Derived Tables"
+              },
+              "mark": {
+                "colors": [
+                  "#8BCAE7"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "87eed5c3",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_lineage",
+                  "fields": [
+                    {
+                      "name": "count(*)",
+                      "expression": "COUNT(`*`)"
+                    },
+                    {
+                      "name": "entity_type",
+                      "expression": "`entity_type`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "count(*)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Count"
+                },
+                "color": {
+                  "fieldName": "entity_type",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Entity Type"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Lineage by Entity Type"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 5,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "9f28dab7",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_consumption",
+                  "fields": [
+                    {
+                      "name": "usage_date",
+                      "expression": "`usage_date`"
+                    },
+                    {
+                      "name": "sum(total_dbus)",
+                      "expression": "SUM(`total_dbus`)"
+                    },
+                    {
+                      "name": "billing_origin_product",
+                      "expression": "`billing_origin_product`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "usage_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "sum(total_dbus)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "DBUs"
+                },
+                "color": {
+                  "fieldName": "billing_origin_product",
+                  "scale": {
+                    "type": "categorical"
+                  },
+                  "displayName": "Product"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "DBU Consumption Over Time"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "03e24017",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_query_activity",
+                  "fields": [
+                    {
+                      "name": "user_name",
+                      "expression": "`user_name`"
+                    },
+                    {
+                      "name": "sum(query_count)",
+                      "expression": "SUM(`query_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "user_name",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "y-reversed"
+                    }
+                  },
+                  "displayName": "User"
+                },
+                "y": {
+                  "fieldName": "sum(query_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Query Count"
+                },
+                "label": {
+                  "show": true
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Most Active Users (Query Count)"
+              },
+              "mark": {
+                "colors": [
+                  "#00A972"
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 9,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "cf1ecf41",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_query_activity",
+                  "fields": [
+                    {
+                      "name": "query_date",
+                      "expression": "`query_date`"
+                    },
+                    {
+                      "name": "sum(query_count)",
+                      "expression": "SUM(`query_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "query_date",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Date"
+                },
+                "y": {
+                  "fieldName": "sum(query_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Queries"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Query Activity Over Time"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 6,
+            "height": 4
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}

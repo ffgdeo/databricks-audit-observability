@@ -1,0 +1,52 @@
+bundle:
+  name: audit-observability
+
+variables:
+  catalog:
+    description: "Target Unity Catalog catalog name"
+    default: "audit_observability_catalog"
+  warehouse_id:
+    description: "SQL Warehouse ID for dashboard queries"
+
+resources:
+  dashboards:
+    audit_observability:
+      display_name: "Business Owner Audit & Observability"
+      file_path: ./src/dashboard/dashboard.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      embed_credentials: false
+
+  jobs:
+    setup_demo_data:
+      name: "[${bundle.target}] Audit Observability - Setup Demo Data"
+      tasks:
+        - task_key: create_schemas_and_tables
+          sql_task:
+            file:
+              path: ./src/sql/01_create_schemas_and_tables.sql
+            warehouse_id: ${var.warehouse_id}
+        - task_key: create_grants
+          depends_on:
+            - task_key: create_schemas_and_tables
+          sql_task:
+            file:
+              path: ./src/sql/02_create_grants.sql
+            warehouse_id: ${var.warehouse_id}
+        - task_key: generate_lineage
+          depends_on:
+            - task_key: create_schemas_and_tables
+          sql_task:
+            file:
+              path: ./src/sql/03_generate_lineage.sql
+            warehouse_id: ${var.warehouse_id}
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: ${DATABRICKS_HOST}
+
+  prod:
+    workspace:
+      host: ${DATABRICKS_HOST}
