@@ -52,16 +52,16 @@
   ],
   "pages": [
     {
-      "name": "62fd124e",
+      "name": "5701333f",
       "displayName": "Ownership & Governance",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "664ceafb",
+            "name": "3fb9a5fb",
             "queries": [
               {
-                "name": "filter_664ceafb_business_owner",
+                "name": "filter_3fb9a5fb_business_owner",
                 "query": {
                   "datasetName": "ds_my_schemas",
                   "fields": [
@@ -86,7 +86,7 @@
                   {
                     "fieldName": "business_owner",
                     "displayName": "Business Owner",
-                    "queryName": "filter_664ceafb_business_owner"
+                    "queryName": "filter_3fb9a5fb_business_owner"
                   }
                 ]
               },
@@ -105,7 +105,7 @@
         },
         {
           "widget": {
-            "name": "4665dd22",
+            "name": "00c35e6a",
             "queries": [
               {
                 "name": "main_query",
@@ -145,7 +145,7 @@
         },
         {
           "widget": {
-            "name": "52bb7d45",
+            "name": "c653c6ba",
             "queries": [
               {
                 "name": "main_query",
@@ -185,7 +185,7 @@
         },
         {
           "widget": {
-            "name": "fb36ad3e",
+            "name": "9f638ff1",
             "queries": [
               {
                 "name": "main_query",
@@ -225,7 +225,7 @@
         },
         {
           "widget": {
-            "name": "6fb199e8",
+            "name": "cc8a22d2",
             "queries": [
               {
                 "name": "main_query",
@@ -265,7 +265,7 @@
         },
         {
           "widget": {
-            "name": "ffc69ad5",
+            "name": "87ca76a0",
             "queries": [
               {
                 "name": "main_query",
@@ -298,37 +298,32 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "catalog_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Catalog"
                   },
                   {
                     "fieldName": "schema_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Schema"
                   },
                   {
                     "fieldName": "business_owner",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Owner"
                   },
                   {
                     "fieldName": "schema_description",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Description"
                   },
                   {
                     "fieldName": "table_count",
-                    "type": "integer",
                     "displayAs": "number",
                     "title": "Tables"
                   }
@@ -349,7 +344,7 @@
         },
         {
           "widget": {
-            "name": "42c3f028",
+            "name": "fa62e4fe",
             "queries": [
               {
                 "name": "main_query",
@@ -380,7 +375,6 @@
                 "x": {
                   "fieldName": "grantee",
                   "scale": {
-                    "type": "categorical",
                     "sort": {
                       "by": "y-reversed"
                     }
@@ -429,7 +423,7 @@
         },
         {
           "widget": {
-            "name": "2fecb140",
+            "name": "fe579093",
             "queries": [
               {
                 "name": "main_query",
@@ -462,37 +456,32 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "schema_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Schema"
                   },
                   {
                     "fieldName": "grantee",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Grantee"
                   },
                   {
                     "fieldName": "privilege_type",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Privilege"
                   },
                   {
                     "fieldName": "grantor",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Granted By"
                   },
                   {
                     "fieldName": "is_grantable",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Grantable?"
                   }
@@ -513,7 +502,7 @@
         },
         {
           "widget": {
-            "name": "87c4b779",
+            "name": "287440cc",
             "queries": [
               {
                 "name": "main_query",
@@ -598,7 +587,7 @@
         },
         {
           "widget": {
-            "name": "458c6c33",
+            "name": "1709c8c6",
             "queries": [
               {
                 "name": "main_query",
@@ -635,43 +624,37 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "table_schema",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Schema"
                   },
                   {
                     "fieldName": "table_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Table"
                   },
                   {
                     "fieldName": "last_altered",
-                    "type": "datetime",
                     "displayAs": "datetime",
                     "title": "Last Updated"
                   },
                   {
                     "fieldName": "hours_since_update",
-                    "type": "integer",
                     "displayAs": "number",
                     "title": "Hours Ago"
                   },
                   {
                     "fieldName": "freshness_status",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Status"
                   },
                   {
                     "fieldName": "last_altered_by",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Updated By"
                   }
@@ -693,16 +676,16 @@
       ]
     },
     {
-      "name": "e519673c",
+      "name": "7b674168",
       "displayName": "Audit Trail & Access",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "b2ae3d2d",
+            "name": "e84ff47e",
             "queries": [
               {
-                "name": "filter_b2ae3d2d_event_date",
+                "name": "filter_e84ff47e_event_date",
                 "query": {
                   "datasetName": "ds_audit",
                   "fields": [
@@ -727,7 +710,7 @@
                   {
                     "fieldName": "event_date",
                     "displayName": "Event Date",
-                    "queryName": "filter_b2ae3d2d_event_date"
+                    "queryName": "filter_e84ff47e_event_date"
                   }
                 ]
               },
@@ -746,7 +729,7 @@
         },
         {
           "widget": {
-            "name": "ab779edd",
+            "name": "b0866b9f",
             "queries": [
               {
                 "name": "main_query",
@@ -786,7 +769,7 @@
         },
         {
           "widget": {
-            "name": "1ce7e94f",
+            "name": "d4dd1791",
             "queries": [
               {
                 "name": "main_query",
@@ -826,7 +809,7 @@
         },
         {
           "widget": {
-            "name": "7648bee2",
+            "name": "808a195e",
             "queries": [
               {
                 "name": "main_query",
@@ -891,7 +874,7 @@
         },
         {
           "widget": {
-            "name": "15ebe78f",
+            "name": "75e19ae1",
             "queries": [
               {
                 "name": "main_query",
@@ -918,7 +901,6 @@
                 "x": {
                   "fieldName": "user_email",
                   "scale": {
-                    "type": "categorical",
                     "sort": {
                       "by": "y-reversed"
                     }
@@ -956,7 +938,7 @@
         },
         {
           "widget": {
-            "name": "57d6e36a",
+            "name": "6b169405",
             "queries": [
               {
                 "name": "main_query",
@@ -1010,7 +992,7 @@
         },
         {
           "widget": {
-            "name": "5a0d40c4",
+            "name": "a63173f7",
             "queries": [
               {
                 "name": "main_query",
@@ -1047,43 +1029,37 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "event_time",
-                    "type": "datetime",
                     "displayAs": "datetime",
                     "title": "Time"
                   },
                   {
                     "fieldName": "user_email",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "User"
                   },
                   {
                     "fieldName": "action_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Action"
                   },
                   {
                     "fieldName": "object_accessed",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Object"
                   },
                   {
                     "fieldName": "source_ip_address",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "IP Address"
                   },
                   {
                     "fieldName": "status_code",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Status"
                   }
@@ -1105,13 +1081,13 @@
       ]
     },
     {
-      "name": "683fc7a6",
+      "name": "34f575f5",
       "displayName": "Lineage & Usage",
       "pageType": "PAGE_TYPE_CANVAS",
       "layout": [
         {
           "widget": {
-            "name": "bb062ade",
+            "name": "ce70fe93",
             "queries": [
               {
                 "name": "main_query",
@@ -1140,31 +1116,27 @@
               }
             ],
             "spec": {
-              "version": 1,
+              "version": 2,
               "widgetType": "table",
               "encodings": {
                 "columns": [
                   {
                     "fieldName": "source_table_full_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Source Table"
                   },
                   {
                     "fieldName": "target_table_full_name",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Target Table"
                   },
                   {
                     "fieldName": "entity_type",
-                    "type": "string",
                     "displayAs": "string",
                     "title": "Entity Type"
                   },
                   {
                     "fieldName": "event_time",
-                    "type": "datetime",
                     "displayAs": "datetime",
                     "title": "Event Time"
                   }
@@ -1185,7 +1157,7 @@
         },
         {
           "widget": {
-            "name": "21c9e417",
+            "name": "05e1d222",
             "queries": [
               {
                 "name": "main_query",
@@ -1212,7 +1184,6 @@
                 "x": {
                   "fieldName": "target_table_full_name",
                   "scale": {
-                    "type": "categorical",
                     "sort": {
                       "by": "y-reversed"
                     }
@@ -1250,7 +1221,7 @@
         },
         {
           "widget": {
-            "name": "7615e9ee",
+            "name": "a5dccff4",
             "queries": [
               {
                 "name": "main_query",
@@ -1304,7 +1275,7 @@
         },
         {
           "widget": {
-            "name": "75bd91fe",
+            "name": "246d37bc",
             "queries": [
               {
                 "name": "main_query",
@@ -1369,7 +1340,7 @@
         },
         {
           "widget": {
-            "name": "d69fb093",
+            "name": "62935354",
             "queries": [
               {
                 "name": "main_query",
@@ -1396,7 +1367,6 @@
                 "x": {
                   "fieldName": "user_name",
                   "scale": {
-                    "type": "categorical",
                     "sort": {
                       "by": "y-reversed"
                     }
@@ -1434,7 +1404,7 @@
         },
         {
           "widget": {
-            "name": "d446e362",
+            "name": "46cb1ef4",
             "queries": [
               {
                 "name": "main_query",

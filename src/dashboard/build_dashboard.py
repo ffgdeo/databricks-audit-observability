@@ -216,13 +216,13 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
                 "disaggregated": True
             }}],
             "spec": {
-                "version": 1, "widgetType": "table",
+                "version": 2, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "catalog_name", "type": "string", "displayAs": "string", "title": "Catalog"},
-                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema"},
-                    {"fieldName": "business_owner", "type": "string", "displayAs": "string", "title": "Owner"},
-                    {"fieldName": "schema_description", "type": "string", "displayAs": "string", "title": "Description"},
-                    {"fieldName": "table_count", "type": "integer", "displayAs": "number", "title": "Tables"}
+                    {"fieldName": "catalog_name", "displayAs": "string", "title": "Catalog"},
+                    {"fieldName": "schema_name", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "business_owner", "displayAs": "string", "title": "Owner"},
+                    {"fieldName": "schema_description", "displayAs": "string", "title": "Description"},
+                    {"fieldName": "table_count", "displayAs": "number", "title": "Tables"}
                 ]},
                 "frame": {"showTitle": True, "title": "My Schemas"}
             }
@@ -246,7 +246,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 3, "widgetType": "bar",
                 "encodings": {
-                    "x": {"fieldName": "grantee", "scale": {"type": "categorical", "sort": {"by": "y-reversed"}}, "displayName": "Grantee"},
+                    "x": {"fieldName": "grantee", "scale": {"sort": {"by": "y-reversed"}}, "displayName": "Grantee"},
                     "y": {"fieldName": "count(*)", "scale": {"type": "quantitative"}, "displayName": "Number of Grants"},
                     "color": {"fieldName": "privilege_type", "scale": {"type": "categorical"}, "displayName": "Privilege Type"},
                     "label": {"show": True}
@@ -274,13 +274,13 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
                 "disaggregated": True
             }}],
             "spec": {
-                "version": 1, "widgetType": "table",
+                "version": 2, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "schema_name", "type": "string", "displayAs": "string", "title": "Schema"},
-                    {"fieldName": "grantee", "type": "string", "displayAs": "string", "title": "Grantee"},
-                    {"fieldName": "privilege_type", "type": "string", "displayAs": "string", "title": "Privilege"},
-                    {"fieldName": "grantor", "type": "string", "displayAs": "string", "title": "Granted By"},
-                    {"fieldName": "is_grantable", "type": "string", "displayAs": "string", "title": "Grantable?"}
+                    {"fieldName": "schema_name", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "grantee", "displayAs": "string", "title": "Grantee"},
+                    {"fieldName": "privilege_type", "displayAs": "string", "title": "Privilege"},
+                    {"fieldName": "grantor", "displayAs": "string", "title": "Granted By"},
+                    {"fieldName": "is_grantable", "displayAs": "string", "title": "Grantable?"}
                 ]},
                 "frame": {"showTitle": True, "title": "Permission Details"}
             }
@@ -336,14 +336,14 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
                 "disaggregated": True
             }}],
             "spec": {
-                "version": 1, "widgetType": "table",
+                "version": 2, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "table_schema", "type": "string", "displayAs": "string", "title": "Schema"},
-                    {"fieldName": "table_name", "type": "string", "displayAs": "string", "title": "Table"},
-                    {"fieldName": "last_altered", "type": "datetime", "displayAs": "datetime", "title": "Last Updated"},
-                    {"fieldName": "hours_since_update", "type": "integer", "displayAs": "number", "title": "Hours Ago"},
-                    {"fieldName": "freshness_status", "type": "string", "displayAs": "string", "title": "Status"},
-                    {"fieldName": "last_altered_by", "type": "string", "displayAs": "string", "title": "Updated By"}
+                    {"fieldName": "table_schema", "displayAs": "string", "title": "Schema"},
+                    {"fieldName": "table_name", "displayAs": "string", "title": "Table"},
+                    {"fieldName": "last_altered", "displayAs": "datetime", "title": "Last Updated"},
+                    {"fieldName": "hours_since_update", "displayAs": "number", "title": "Hours Ago"},
+                    {"fieldName": "freshness_status", "displayAs": "string", "title": "Status"},
+                    {"fieldName": "last_altered_by", "displayAs": "string", "title": "Updated By"}
                 ]},
                 "frame": {"showTitle": True, "title": "Data Freshness Details"}
             }
@@ -464,7 +464,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 3, "widgetType": "bar",
                 "encodings": {
-                    "x": {"fieldName": "user_email", "scale": {"type": "categorical", "sort": {"by": "y-reversed"}}, "displayName": "User"},
+                    "x": {"fieldName": "user_email", "scale": {"sort": {"by": "y-reversed"}}, "displayName": "User"},
                     "y": {"fieldName": "count(*)", "scale": {"type": "quantitative"}, "displayName": "Access Count"},
                     "label": {"show": True}
                 },
@@ -516,14 +516,14 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
                 "disaggregated": True
             }}],
             "spec": {
-                "version": 1, "widgetType": "table",
+                "version": 2, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Time"},
-                    {"fieldName": "user_email", "type": "string", "displayAs": "string", "title": "User"},
-                    {"fieldName": "action_name", "type": "string", "displayAs": "string", "title": "Action"},
-                    {"fieldName": "object_accessed", "type": "string", "displayAs": "string", "title": "Object"},
-                    {"fieldName": "source_ip_address", "type": "string", "displayAs": "string", "title": "IP Address"},
-                    {"fieldName": "status_code", "type": "string", "displayAs": "string", "title": "Status"}
+                    {"fieldName": "event_time", "displayAs": "datetime", "title": "Time"},
+                    {"fieldName": "user_email", "displayAs": "string", "title": "User"},
+                    {"fieldName": "action_name", "displayAs": "string", "title": "Action"},
+                    {"fieldName": "object_accessed", "displayAs": "string", "title": "Object"},
+                    {"fieldName": "source_ip_address", "displayAs": "string", "title": "IP Address"},
+                    {"fieldName": "status_code", "displayAs": "string", "title": "Status"}
                 ]},
                 "frame": {"showTitle": True, "title": "Audit Log Detail"}
             }
@@ -559,12 +559,12 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
                 "disaggregated": True
             }}],
             "spec": {
-                "version": 1, "widgetType": "table",
+                "version": 2, "widgetType": "table",
                 "encodings": {"columns": [
-                    {"fieldName": "source_table_full_name", "type": "string", "displayAs": "string", "title": "Source Table"},
-                    {"fieldName": "target_table_full_name", "type": "string", "displayAs": "string", "title": "Target Table"},
-                    {"fieldName": "entity_type", "type": "string", "displayAs": "string", "title": "Entity Type"},
-                    {"fieldName": "event_time", "type": "datetime", "displayAs": "datetime", "title": "Event Time"}
+                    {"fieldName": "source_table_full_name", "displayAs": "string", "title": "Source Table"},
+                    {"fieldName": "target_table_full_name", "displayAs": "string", "title": "Target Table"},
+                    {"fieldName": "entity_type", "displayAs": "string", "title": "Entity Type"},
+                    {"fieldName": "event_time", "displayAs": "datetime", "title": "Event Time"}
                 ]},
                 "frame": {"showTitle": True, "title": "Data Lineage"}
             }
@@ -587,7 +587,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 3, "widgetType": "bar",
                 "encodings": {
-                    "x": {"fieldName": "target_table_full_name", "scale": {"type": "categorical", "sort": {"by": "y-reversed"}}, "displayName": "Target Table"},
+                    "x": {"fieldName": "target_table_full_name", "scale": {"sort": {"by": "y-reversed"}}, "displayName": "Target Table"},
                     "y": {"fieldName": "count(*)", "scale": {"type": "quantitative"}, "displayName": "Lineage Edges"},
                     "label": {"show": True}
                 },
@@ -663,7 +663,7 @@ def build_dashboard(catalog: str = "audit_observability_catalog") -> dict:
             "spec": {
                 "version": 3, "widgetType": "bar",
                 "encodings": {
-                    "x": {"fieldName": "user_name", "scale": {"type": "categorical", "sort": {"by": "y-reversed"}}, "displayName": "User"},
+                    "x": {"fieldName": "user_name", "scale": {"sort": {"by": "y-reversed"}}, "displayName": "User"},
                     "y": {"fieldName": "sum(query_count)", "scale": {"type": "quantitative"}, "displayName": "Query Count"},
                     "label": {"show": True}
                 },
